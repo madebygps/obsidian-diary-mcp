@@ -32,8 +32,7 @@ class EntryManager:
     def read_entry(self, file_path: Path) -> str:
         """Read the content of a diary entry file."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                return f.read()
+            return file_path.read_text(encoding="utf-8")
         except (FileNotFoundError, PermissionError, OSError) as e:
             return f"Error reading file: {e}"
     
@@ -59,25 +58,14 @@ class EntryManager:
     
     def remove_existing_backlinks(self, content: str) -> str:
         """Remove existing backlinks sections from content (including placeholder sections)."""
-        # Remove old-style backlinks
-        content = re.sub(r"---\n\*\*Related entries:\*\*.*$", "", content, flags=re.DOTALL)
-        content = re.sub(r"---\n\*\*Memory links:\*\*.*$", "", content, flags=re.DOTALL)
-        
-        # Remove placeholder Memory Links section (with or without emoji)
-        content = re.sub(
+        patterns = [
+            r"---\n\*\*(?:Related entries|Memory links):\*\*.*$",
             r"---\s*##\s*(?:🔗\s*)?Memory Links\s*\n+\*Temporal connections.*?\*",
-            "",
-            content,
-            flags=re.DOTALL | re.IGNORECASE
-        )
+            r"---\s*##\s*(?:🔗\s*)?Memory Links\s*\n+.*?(?=\n---|\Z)"
+        ]
         
-        # Remove any completed Memory Links section
-        content = re.sub(
-            r"---\s*##\s*(?:🔗\s*)?Memory Links\s*\n+.*?(?=\n---|\Z)",
-            "",
-            content,
-            flags=re.DOTALL | re.IGNORECASE
-        )
+        for pattern in patterns:
+            content = re.sub(pattern, "", content, flags=re.DOTALL | re.IGNORECASE)
         
         return content.rstrip()
     

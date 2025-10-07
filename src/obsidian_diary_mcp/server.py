@@ -13,7 +13,6 @@ from .logger import server_logger
 
 mcp = FastMCP("obsidian-diary")
 
-# Log configuration on startup
 server_logger.info(f"📁 Diary Path: {DIARY_PATH}")
 server_logger.info(f"📋 Planner Path: {PLANNER_PATH}")
 
@@ -28,7 +27,7 @@ initialize_ollama()
     }
 )
 async def create_diary_template(
-    date: Annotated[str, "REQUIRED: Current date in YYYY-MM-DD format. For 'today', pass the current system date like '2024-10-05'"],
+    date: Annotated[str, "REQUIRED: Current date in YYYY-MM-DD format. For 'today', pass the current system date like '2025-10-07'"],
     focus: Annotated[str | None, "Optional focus area (e.g., 'current struggles', 'cognitive patterns')"] = None
 ) -> str:
     """Create a sophisticated diary template with intellectually rigorous prompts for deep cognitive exploration."""
@@ -37,12 +36,10 @@ async def create_diary_template(
     except ValueError:
         return "Error: Date must be in YYYY-MM-DD format"
 
-    filename = entry_date.strftime("%Y-%m-%d")
-
     if entry_manager.entry_exists(entry_date):
-        return f"Memory log for {filename} already exists. Use read_diary_entry to view it."
+        return f"Memory log for {date} already exists. Use read_diary_entry to view it."
 
-    return await template_generator.generate_template_content(entry_date, filename, focus)
+    return await template_generator.generate_template_content(entry_date, date, focus)
 
 
 @mcp.tool(
@@ -54,7 +51,7 @@ async def create_diary_template(
     }
 )
 async def create_diary_entry_file(
-    date: Annotated[str, "REQUIRED: Current date in YYYY-MM-DD format. For 'today', pass the current system date like '2024-10-05'"],
+    date: Annotated[str, "REQUIRED: Current date in YYYY-MM-DD format. For 'today', pass the current system date like '2025-10-07'"],
     focus: Annotated[str | None, "Optional focus area (e.g., 'current struggles', 'cognitive patterns')"] = None
 ) -> str:
     """Create a sophisticated diary entry file with AI-generated analytical prompts for deep intellectual exploration."""
@@ -63,13 +60,12 @@ async def create_diary_entry_file(
     except ValueError:
         return "Error: Date must be in YYYY-MM-DD format"
 
-    filename = entry_date.strftime("%Y-%m-%d")
     file_path = entry_manager.get_entry_path(entry_date)
 
     if entry_manager.entry_exists(entry_date):
-        return f"Memory log for {filename} already exists at {file_path}"
+        return f"Memory log for {date} already exists at {file_path}"
 
-    template_content = await template_generator.generate_template_content(entry_date, filename, focus)
+    template_content = await template_generator.generate_template_content(entry_date, date, focus)
 
     if entry_manager.write_entry(file_path, template_content):
         return f"🧠 Created memory log: {file_path}\n\nExplore the prompts, then use 'complete_diary_entry' when done to auto-generate memory links!"
@@ -86,7 +82,7 @@ async def create_diary_entry_file(
     }
 )
 async def complete_diary_entry(
-    date: Annotated[str, "REQUIRED: Current date in YYYY-MM-DD format. For 'today', pass the current system date like '2024-10-05'"]
+    date: Annotated[str, "REQUIRED: Current date in YYYY-MM-DD format. For 'today', pass the current system date like '2025-10-07'"]
 ) -> str:
     """Complete your diary entry - automatically generates Obsidian-compatible memory links and provides cognitive analysis.
     Use this when you're done writing. Creates [[YYYY-MM-DD]] backlinks that integrate with Obsidian's backlink system.
@@ -96,14 +92,13 @@ async def complete_diary_entry(
     except ValueError:
         return "Error: Date must be in YYYY-MM-DD format"
 
-    filename = entry_date.strftime("%Y-%m-%d")
     file_path = entry_manager.get_entry_path(entry_date)
 
     if not entry_manager.entry_exists(entry_date):
-        return f"No memory log found for {filename}. Create one first."
+        return f"No memory log found for {date}. Create one first."
 
     content = entry_manager.read_entry(file_path)
-    related = await analysis_engine.find_related_entries(content, exclude_date=filename)
+    related = await analysis_engine.find_related_entries(content, exclude_date=date)
 
     themes = await analysis_engine.extract_themes_and_topics(content)
     topic_tags = analysis_engine.generate_topic_tags(themes)
@@ -116,15 +111,13 @@ async def complete_diary_entry(
         total_entries = len(entry_manager.get_all_entries())
         connection_percentage = (len(related) / max(total_entries - 1, 1)) * 100 if related else 0
         
-        connection_parts = []
-        if related:
-            connection_parts.append(f"{len(related)} temporal")
+        connection_parts = [f"{len(related)} temporal"] if related else []
         if topic_tags:
             connection_parts.append(f"{len(topic_tags)} topics")
         
         connections_desc = " + ".join(connection_parts) if connection_parts else "novel territory"
         
-        return f"🧠 **Cognitive trace completed** for {filename}\n\n🔍 **Analytical themes:** {themes_str}\n🔗 **Memory network:** {connections_desc} ({connection_percentage:.1f}% temporal coverage)\n\n📚 **Integration status:** Your exploration is now woven into Obsidian's knowledge graph!\n\n💡 **Discover more:** Backlinks panel (temporal), Tags panel (topics), Graph view (visual network)"
+        return f"🧠 **Cognitive trace completed** for {date}\n\n🔍 **Analytical themes:** {themes_str}\n🔗 **Memory network:** {connections_desc} ({connection_percentage:.1f}% temporal coverage)\n\n📚 **Integration status:** Your exploration is now woven into Obsidian's knowledge graph!\n\n💡 **Discover more:** Backlinks panel (temporal), Tags panel (topics), Graph view (visual network)"
     else:
         return "Error completing entry: Permission denied or I/O error"
 
@@ -146,14 +139,13 @@ async def update_entry_backlinks(
     except ValueError:
         return "Error: Date must be in YYYY-MM-DD format"
 
-    filename = entry_date.strftime("%Y-%m-%d")
     file_path = entry_manager.get_entry_path(entry_date)
 
     if not entry_manager.entry_exists(entry_date):
-        return f"No memory log found for {filename}"
+        return f"No memory log found for {date}"
 
     content = entry_manager.read_entry(file_path)
-    related = await analysis_engine.find_related_entries(content, exclude_date=filename)
+    related = await analysis_engine.find_related_entries(content, exclude_date=date)
 
     themes = await analysis_engine.extract_themes_and_topics(content)
     topic_tags = analysis_engine.generate_topic_tags(themes)
@@ -161,16 +153,14 @@ async def update_entry_backlinks(
     content = entry_manager.add_memory_links(content, related, topic_tags)
 
     if entry_manager.write_entry(file_path, content):
-        connection_types = []
-        if related:
-            connection_types.append(f"{len(related)} temporal")
+        connection_types = [f"{len(related)} temporal"] if related else []
         if topic_tags:
             connection_types.append(f"{len(topic_tags)} topic tags")
         
         connections_str = " + ".join(connection_types) if connection_types else "none found"
         
         return (
-            f"✅ **Memory links updated** for {filename}\n\n🔗 **Connections:** {connections_str}\n\n💡 **Obsidian power:** Use Backlinks panel for temporal connections, Tags panel for topics, Graph view for visual exploration!"
+            f"✅ **Memory links updated** for {date}\n\n🔗 **Connections:** {connections_str}\n\n💡 **Obsidian power:** Use Backlinks panel for temporal connections, Tags panel for topics, Graph view for visual exploration!"
         )
     else:
         return "Error updating entry: Permission denied or I/O error"
@@ -253,11 +243,10 @@ def read_diary_entry(
     except ValueError:
         return "Error: Date must be in YYYY-MM-DD format"
 
-    filename = entry_date.strftime("%Y-%m-%d")
     file_path = entry_manager.get_entry_path(entry_date)
 
     if not entry_manager.entry_exists(entry_date):
-        return f"No memory log found for {filename}"
+        return f"No memory log found for {date}"
 
     return entry_manager.read_entry(file_path)
 
@@ -279,10 +268,10 @@ def list_recent_entries(
         return "No memory logs found"
 
     result = [f"📅 Your {len(entries)} most recent memory logs:\n"]
-    for date, path in entries:
-        result.append(
-            f"- {date.strftime('%Y-%m-%d')} ({date.strftime('%A, %B %d, %Y')})"
-        )
+    result.extend(
+        f"- {date.strftime('%Y-%m-%d')} ({date.strftime('%A, %B %d, %Y')})"
+        for date, path in entries
+    )
 
     return "\n".join(result)
 
@@ -309,16 +298,14 @@ async def show_themes(
     if not recent_entries:
         return f"No memory logs found in the last {days} days"
     
-    all_themes = []
-    theme_frequency = {}
+    from collections import Counter
+    theme_frequency = Counter()
     
     for date, file_path in recent_entries:
         content = entry_manager.read_entry(file_path)
         if not content.startswith("Error"):
             themes = await analysis_engine.get_themes_cached(content, file_path.stem)
-            all_themes.extend(themes)
-            for theme in themes:
-                theme_frequency[theme] = theme_frequency.get(theme, 0) + 1
+            theme_frequency.update(themes)
     
     if not theme_frequency:
         return f"No themes identified in the last {days} days"
@@ -326,10 +313,10 @@ async def show_themes(
     sorted_themes = sorted(theme_frequency.items(), key=lambda x: x[1], reverse=True)
     
     result = [f"🧠 **Recurring themes from the last {days} days** ({len(recent_entries)} entries analyzed):\n"]
-    
-    for theme, count in sorted_themes[:15]:
-        percentage = (count / len(recent_entries)) * 100
-        result.append(f"- **{theme}** ({count}× across {percentage:.0f}% of entries)")
+    result.extend(
+        f"- **{theme}** ({count}× across {(count / len(recent_entries)) * 100:.0f}% of entries)"
+        for theme, count in sorted_themes[:15]
+    )
     
     if len(sorted_themes) > 15:
         result.append(f"\n_...and {len(sorted_themes) - 15} more themes_")
@@ -401,7 +388,7 @@ async def create_memory_trace(
     }
 )
 async def extract_todos(
-    date: Annotated[str, "Date of the entry in YYYY-MM-DD format (e.g., '2024-10-05' for today)"]
+    date: Annotated[str, "Date of the entry in YYYY-MM-DD format (e.g., '2025-10-07' for today)"]
 ) -> str:
     """Extract action items and todos from a diary entry and save them to a planner file.
     
@@ -414,13 +401,12 @@ async def extract_todos(
     except ValueError:
         return "Error: Date must be in YYYY-MM-DD format"
     
-    filename = entry_date.strftime("%Y-%m-%d")
     file_path = entry_manager.get_entry_path(entry_date)
     
     if not entry_manager.entry_exists(entry_date):
-        return f"No memory log found for {filename}. Create one first."
+        return f"No memory log found for {date}. Create one first."
     
-    print(f"📝 Extracting todos from {filename}...")
+    print(f"📝 Extracting todos from {date}...")
     
     content = entry_manager.read_entry(file_path)
     if content.startswith("Error reading file"):
@@ -429,18 +415,14 @@ async def extract_todos(
     todos = await analysis_engine.extract_todos(content)
     
     if not todos:
-        return f"No action items found in entry for {filename}. Your entry may not contain any explicit tasks or todos."
+        return f"No action items found in entry for {date}. Your entry may not contain any explicit tasks or todos."
     
-    # Create planner directory
     PLANNER_PATH.mkdir(parents=True, exist_ok=True)
     
-    # Generate planner file
-    planner_filename = f"todos-{filename}.md"
-    planner_path = PLANNER_PATH / planner_filename
+    planner_path = PLANNER_PATH / f"todos-{date}.md"
     
-    # Format the content
     planner_content = f"# Action Items - {entry_date.strftime('%B %d, %Y')}\n\n"
-    planner_content += f"Extracted from diary entry: [[{filename}]]\n\n"
+    planner_content += f"Extracted from diary entry: [[{date}]]\n\n"
     planner_content += "## 📋 Tasks\n\n"
     
     for todo in todos:
@@ -448,7 +430,6 @@ async def extract_todos(
     
     planner_content += f"\n---\n\n*Extracted on {datetime.now().strftime('%Y-%m-%d at %H:%M')}*\n"
     
-    # Write the planner file
     try:
         planner_path.write_text(planner_content, encoding="utf-8")
         return f"✅ **Extracted {len(todos)} action items!**\n\n📁 Saved to: {planner_path}\n\n💡 **Next steps:**\n- Review and prioritize your tasks\n- Add deadlines or context as needed\n- Check off items as you complete them\n\n📝 **Preview:**\n{chr(10).join([f'- {todo}' for todo in todos[:5]])}{'...' if len(todos) > 5 else ''}"

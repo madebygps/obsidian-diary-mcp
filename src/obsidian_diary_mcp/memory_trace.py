@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import List, Tuple, Dict, Set
+from typing import List, Tuple, Dict
 from collections import Counter
 import re
 
@@ -14,14 +14,10 @@ async def generate_memory_trace(
 ) -> str:
     """Generate a comprehensive memory trace document."""
     
-    # Sort entries by date (oldest first for chronological analysis)
     sorted_entries = sorted(entries, key=lambda x: x[0])
     
-    # Collect all entry data
     entry_data = []
     all_themes = []
-    theme_by_entry = {}
-    content_by_date = {}
     
     print("📚 Reading and analyzing entries...")
     for date, path in sorted_entries:
@@ -38,21 +34,16 @@ async def generate_memory_trace(
         })
         
         all_themes.extend(themes)
-        theme_by_entry[date] = themes
-        content_by_date[date] = content
     
     if not entry_data:
         return "No valid entries found to analyze."
     
-    # Calculate statistics
     date_range_start = sorted_entries[0][0].strftime("%B %Y")
     date_range_end = sorted_entries[-1][0].strftime("%B %Y")
     today = datetime.now().strftime("%Y-%m-%d")
     
-    # Build the memory trace document
     trace = []
     
-    # Header
     trace.append("# Memory Trace")
     trace.append(f"*Generated: {today}*")
     trace.append("")
@@ -61,48 +52,39 @@ async def generate_memory_trace(
     trace.append("---")
     trace.append("")
     
-    # Timeline Overview
     timeline = await _generate_timeline_overview(entry_data, analysis_engine)
     trace.append(timeline)
     trace.append("")
     
-    # Core Themes
     core_themes = await _generate_core_themes(entry_data, analysis_engine, entry_manager)
     trace.append(core_themes)
     trace.append("")
     
-    # Recurring Patterns
     patterns = _generate_recurring_patterns(entry_data, all_themes)
     trace.append(patterns)
     trace.append("")
     
-    # Key Relationships Map (if relationships detected)
     relationships = _generate_relationships_map(entry_data)
     if relationships:
         trace.append(relationships)
         trace.append("")
     
-    # Growth Trajectory
     growth = _generate_growth_trajectory(entry_data)
     trace.append(growth)
     trace.append("")
     
-    # Wisdom Extracted
     wisdom = await _generate_wisdom_extracted(entry_data, analysis_engine)
     trace.append(wisdom)
     trace.append("")
     
-    # Timeline of Significant Moments
     timeline_moments = _generate_timeline_moments(entry_data)
     trace.append(timeline_moments)
     trace.append("")
     
-    # Entry Emotional Overview
     emotional_overview = _generate_emotional_overview(entry_data)
     trace.append(emotional_overview)
     trace.append("")
     
-    # Footer
     trace.append("---")
     trace.append("")
     trace.append("*This memory trace serves as a living document of your journey. Update it periodically to track your evolution.*")
@@ -115,27 +97,18 @@ async def _generate_timeline_overview(entry_data: List[Dict], analysis_engine) -
     timeline = ["## Timeline Overview", ""]
     
     if len(entry_data) <= 10:
-        # Simple timeline for fewer entries
         timeline.append("```")
         for i, entry in enumerate(entry_data):
             date_str = entry['date'].strftime("%Y-%m-%d")
             themes_str = " & ".join(entry['themes'][:2]) if entry['themes'] else "Reflection"
             
+            timeline.append(f"{date_str} ─────► " if i < len(entry_data) - 1 else date_str)
+            timeline.extend(["   │", "   ▼", themes_str])
             if i < len(entry_data) - 1:
-                timeline.append(f"{date_str} ─────► ")
-            else:
-                timeline.append(f"{date_str}")
-            timeline.append(f"   │")
-            timeline.append(f"   ▼")
-            timeline.append(f"{themes_str}")
-            if i < len(entry_data) - 1:
-                timeline.append(f"   │")
-                timeline.append("")
+                timeline.extend(["   │", ""])
         timeline.append("```")
     else:
-        # Condensed timeline for many entries
         timeline.append("```")
-        # Sample key entries (first, middle points, last)
         key_indices = [0, len(entry_data)//3, 2*len(entry_data)//3, len(entry_data)-1]
         
         for i, idx in enumerate(key_indices):
@@ -146,12 +119,12 @@ async def _generate_timeline_overview(entry_data: List[Dict], analysis_engine) -
             if i < len(key_indices) - 1:
                 timeline.append(f"{date_str} ─────► {key_indices[i+1] - idx} entries ─────► ")
             else:
-                timeline.append(f"{date_str}")
-            timeline.append(f"   │")
-            timeline.append(f"   ▼")
-            timeline.append(f"{themes_str.title()}")
+                timeline.append(date_str)
+            timeline.append("   │")
+            timeline.append("   ▼")
+            timeline.append(themes_str.title())
             if i < len(key_indices) - 1:
-                timeline.append(f"   │")
+                timeline.append("   │")
                 timeline.append("")
         timeline.append("```")
     
@@ -165,7 +138,6 @@ async def _generate_core_themes(entry_data: List[Dict], analysis_engine, entry_m
     """Generate core themes section with evolution."""
     themes_section = ["## Core Themes", ""]
     
-    # Count theme frequency
     all_themes = []
     for entry in entry_data:
         all_themes.extend(entry['themes'])
@@ -179,25 +151,21 @@ async def _generate_core_themes(entry_data: List[Dict], analysis_engine, entry_m
     print(f"🎯 Analyzing top {len(top_themes)} themes in detail...")
     
     for theme, count in top_themes:
-        # Find entries with this theme
         theme_entries = [e for e in entry_data if theme in e['themes']]
         
         if not theme_entries:
             continue
         
-        # Get date range for this theme
         first_date = theme_entries[0]['date'].strftime("%B %Y")
         last_date = theme_entries[-1]['date'].strftime("%B %Y")
         
         percentage = (count / len(entry_data)) * 100
         
-        # Create theme header with emoji (simple heuristic)
         emoji = _get_theme_emoji(theme)
         themes_section.append(f"### {emoji} {theme.title().replace('-', ' ')}")
         themes_section.append(f"**Frequency:** {count} entries ({percentage:.0f}% of period) | **Active:** {first_date} → {last_date}")
         themes_section.append("")
         
-        # Evolution summary
         if len(theme_entries) >= 3:
             early_entry = theme_entries[0]
             mid_entry = theme_entries[len(theme_entries)//2]
@@ -210,7 +178,6 @@ async def _generate_core_themes(entry_data: List[Dict], analysis_engine, entry_m
             themes_section.append(f"**Recent ({late_entry['date'].strftime('%B %Y')})**: {_extract_snippet(late_entry['content'], 100)}")
             themes_section.append("")
         else:
-            # Just show latest
             latest = theme_entries[-1]
             themes_section.append(f"**Context:** {_extract_snippet(latest['content'], 150)}")
             themes_section.append("")
@@ -226,7 +193,6 @@ def _generate_recurring_patterns(entry_data: List[Dict], all_themes: List[str]) 
     """Identify recurring patterns and cycles."""
     patterns_section = ["## Recurring Patterns", ""]
     
-    # Theme co-occurrence analysis
     theme_pairs = Counter()
     for entry in entry_data:
         themes = entry['themes']
@@ -235,7 +201,6 @@ def _generate_recurring_patterns(entry_data: List[Dict], all_themes: List[str]) 
                 pair = tuple(sorted([theme1, theme2]))
                 theme_pairs[pair] += 1
     
-    # Find most common patterns
     common_pairs = theme_pairs.most_common(5)
     
     if common_pairs:
@@ -245,7 +210,6 @@ def _generate_recurring_patterns(entry_data: List[Dict], all_themes: List[str]) 
             patterns_section.append(f"- **{theme1.replace('-', ' ').title()}** ↔ **{theme2.replace('-', ' ').title()}** (co-occurred {count}× times)")
         patterns_section.append("")
     
-    # Weekly patterns (if we have day-of-week data)
     day_themes = {}
     for entry in entry_data:
         day = entry['date'].strftime("%A")
@@ -270,18 +234,18 @@ def _generate_recurring_patterns(entry_data: List[Dict], all_themes: List[str]) 
 
 def _generate_relationships_map(entry_data: List[Dict]) -> str:
     """Generate relationship map if people are mentioned."""
-    # Simple name detection (capitalized words that appear multiple times)
+    exclude_words = {'The', 'I', 'My', 'A', 'An', 'This', 'That', 'These', 'Those', 
+                     'When', 'Where', 'Why', 'How', 'What', 'Memory', 'Links', 'Brain', 'Dump', 
+                     'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+                     'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 
+                     'September', 'October', 'November', 'December'}
+    
     potential_names = Counter()
     
     for entry in entry_data:
-        content = entry['content']
-        # Find capitalized words (potential names)
-        words = re.findall(r'\b[A-Z][a-z]+\b', content)
-        # Filter out common non-names
-        filtered = [w for w in words if w not in {'The', 'I', 'My', 'A', 'An', 'This', 'That', 'These', 'Those', 'When', 'Where', 'Why', 'How', 'What', 'Memory', 'Links', 'Brain', 'Dump', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'}]
-        potential_names.update(filtered)
+        words = re.findall(r'\b[A-Z][a-z]+\b', entry['content'])
+        potential_names.update(w for w in words if w not in exclude_words)
     
-    # Only include names that appear 3+ times
     significant_names = [(name, count) for name, count in potential_names.most_common(10) if count >= 3]
     
     if not significant_names or len(significant_names) < 2:
@@ -293,19 +257,18 @@ def _generate_relationships_map(entry_data: List[Dict]) -> str:
     relationships.append("              │")
     relationships.append("    ┌─────────┴─────────┐")
     
-    # Split into categories (simple heuristic based on frequency)
     high_freq = [n for n, c in significant_names if c >= len(entry_data) * 0.3]
     med_freq = [n for n, c in significant_names if len(entry_data) * 0.1 <= c < len(entry_data) * 0.3]
     
     if high_freq:
-        relationships.append(f"    │                 │")
-        relationships.append(f" Close Circle    Extended Network")
+        relationships.append("    │                 │")
+        relationships.append(" Close Circle    Extended Network")
         for name in high_freq[:3]:
             count = potential_names[name]
             relationships.append(f"   {name} ({count}×)")
     
     if med_freq:
-        relationships.append(f"                     │")
+        relationships.append("                     │")
         for name in med_freq[:4]:
             count = potential_names[name]
             relationships.append(f"                  {name} ({count}×)")
@@ -321,29 +284,26 @@ def _generate_growth_trajectory(entry_data: List[Dict]) -> str:
     """Generate growth trajectory visualization."""
     growth = ["## Growth Trajectory", ""]
     
-    # Simple sentiment/growth heuristic based on positive/negative words
-    positive_words = {'great', 'good', 'excellent', 'amazing', 'wonderful', 'love', 'happy', 'excited', 'grateful', 'proud', 'success', 'achieved', 'progress', 'better', 'improved', 'growth', 'win'}
-    negative_words = {'bad', 'terrible', 'awful', 'sad', 'angry', 'frustrated', 'worried', 'anxious', 'stressed', 'failed', 'struggling', 'difficult', 'hard', 'tired', 'exhausted'}
+    positive_words = {'great', 'good', 'excellent', 'amazing', 'wonderful', 'love', 'happy', 
+                      'excited', 'grateful', 'proud', 'success', 'achieved', 'progress', 'better', 
+                      'improved', 'growth', 'win'}
+    negative_words = {'bad', 'terrible', 'awful', 'sad', 'angry', 'frustrated', 'worried', 
+                      'anxious', 'stressed', 'failed', 'struggling', 'difficult', 'hard', 'tired', 
+                      'exhausted'}
     
-    # Analyze sentiment over time
     sentiment_scores = []
     for entry in entry_data:
         content_lower = entry['content'].lower()
         positive_count = sum(1 for word in positive_words if word in content_lower)
         negative_count = sum(1 for word in negative_words if word in content_lower)
         
-        # Calculate net sentiment
-        if positive_count + negative_count > 0:
-            score = (positive_count - negative_count) / (positive_count + negative_count)
-        else:
-            score = 0
+        total = positive_count + negative_count
+        score = (positive_count - negative_count) / total if total > 0 else 0
         
         sentiment_scores.append(score)
     
-    # Create ASCII visualization
     growth.append("```")
     
-    # Divide into segments
     segment_size = max(1, len(sentiment_scores) // 5)
     segments = []
     for i in range(0, len(sentiment_scores), segment_size):
@@ -351,7 +311,6 @@ def _generate_growth_trajectory(entry_data: List[Dict]) -> str:
         avg = sum(segment) / len(segment) if segment else 0
         segments.append(avg)
     
-    # Draw trajectory
     for i, score in enumerate(segments):
         date = entry_data[i * segment_size]['date'].strftime("%Y-%m")
         
@@ -387,7 +346,6 @@ async def _generate_wisdom_extracted(entry_data: List[Dict], analysis_engine) ->
     wisdom.append("Key insights discovered throughout your entries:")
     wisdom.append("")
     
-    # Look for explicit reflective statements
     insight_patterns = [
         r'"([^"]{20,150})"',  # Quoted text
         r'learned that ([^.!?]{20,150})[.!?]',
@@ -429,21 +387,14 @@ def _generate_timeline_moments(entry_data: List[Dict]) -> str:
     """Generate timeline of significant moments."""
     timeline = ["## Timeline of Significant Moments", ""]
     
-    # Select key entries (start, end, and some in between)
-    if len(entry_data) <= 5:
-        key_entries = entry_data
-    else:
-        indices = [0, len(entry_data)//4, len(entry_data)//2, 3*len(entry_data)//4, len(entry_data)-1]
-        key_entries = [entry_data[i] for i in indices]
+    key_entries = entry_data if len(entry_data) <= 5 else [entry_data[i] for i in [0, len(entry_data)//4, len(entry_data)//2, 3*len(entry_data)//4, len(entry_data)-1]]
     
     for entry in key_entries:
         date_str = entry['date'].strftime("%B %d, %Y")
-        themes_str = ", ".join(entry['themes'][:3]) if entry['themes'] else "reflection"
+        themes_str = (", ".join(entry['themes'][:3]) if entry['themes'] else "reflection").title().replace('-', ' ')
         snippet = _extract_snippet(entry['content'], 80)
         
-        timeline.append(f"**{date_str}** - {themes_str.title().replace('-', ' ')}")
-        timeline.append(f"  ↳ {snippet}")
-        timeline.append("")
+        timeline.extend([f"**{date_str}** - {themes_str}", f"  ↳ {snippet}", ""])
     
     timeline.append("---")
     
@@ -454,15 +405,13 @@ def _generate_emotional_overview(entry_data: List[Dict]) -> str:
     """Generate quick reference of entry tones."""
     overview = ["## Quick Reference: Entry Overview", ""]
     
-    # Just list dates with primary themes
-    for entry in entry_data[-15:]:  # Last 15 entries
-        date_str = entry['date'].strftime("%Y-%m-%d")
-        themes_str = ", ".join(entry['themes'][:2]) if entry['themes'] else "general reflection"
-        overview.append(f"- **{date_str}**: {themes_str.replace('-', ' ')}")
+    overview.extend(
+        f"- **{entry['date'].strftime('%Y-%m-%d')}**: {(', '.join(entry['themes'][:2]) if entry['themes'] else 'general reflection').replace('-', ' ')}"
+        for entry in entry_data[-15:]
+    )
     
     if len(entry_data) > 15:
-        overview.append("")
-        overview.append(f"*...and {len(entry_data) - 15} earlier entries*")
+        overview.extend(["", f"*...and {len(entry_data) - 15} earlier entries*"])
     
     overview.append("")
     overview.append("---")
@@ -472,12 +421,10 @@ def _generate_emotional_overview(entry_data: List[Dict]) -> str:
 
 def _extract_snippet(content: str, max_length: int = 100) -> str:
     """Extract a meaningful snippet from content."""
-    # Remove markdown headers and links
     clean = re.sub(r'#+ ', '', content)
     clean = re.sub(r'\[\[.*?\]\]', '', clean)
     clean = re.sub(r'\*\*.*?\*\*:', '', clean)
     
-    # Get first substantial sentence
     sentences = re.split(r'[.!?]+', clean)
     for sentence in sentences:
         sentence = sentence.strip()
@@ -486,7 +433,6 @@ def _extract_snippet(content: str, max_length: int = 100) -> str:
                 return sentence[:max_length] + "..."
             return sentence
     
-    # Fallback: just return first max_length characters
     clean = clean.strip()
     if len(clean) > max_length:
         return clean[:max_length] + "..."

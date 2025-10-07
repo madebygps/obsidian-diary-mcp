@@ -31,7 +31,7 @@ class OllamaClient:
                         "stream": False,
                         "options": {
                             "temperature": OLLAMA_TEMPERATURE,
-                            "num_predict": OLLAMA_NUM_PREDICT,  # Max tokens (Ollama's API requirement)
+                            "num_predict": OLLAMA_NUM_PREDICT,
                         }
                     },
                     timeout=self.timeout

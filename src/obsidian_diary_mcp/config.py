@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Load paths - no defaults, must be configured
 diary_path_env = os.getenv("DIARY_PATH")
 planner_path_env = os.getenv("PLANNER_PATH")
 
@@ -28,6 +27,6 @@ RECENT_ENTRIES_COUNT = int(os.getenv("RECENT_ENTRIES_COUNT", "3"))
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")
-OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", "60"))  # Longer for reasoning models
+OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", "60"))
 OLLAMA_TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.7"))
-OLLAMA_NUM_PREDICT = int(os.getenv("OLLAMA_NUM_PREDICT", "1000"))  # Max tokens (Ollama's API name)
+OLLAMA_NUM_PREDICT = int(os.getenv("OLLAMA_NUM_PREDICT", "1000"))
