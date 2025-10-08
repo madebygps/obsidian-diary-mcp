@@ -13,8 +13,8 @@ from .logger import server_logger
 
 mcp = FastMCP("obsidian-diary")
 
-server_logger.info(f"📁 Diary Path: {DIARY_PATH}")
-server_logger.info(f"📋 Planner Path: {PLANNER_PATH}")
+server_logger.info(f"Diary Path: {DIARY_PATH}")
+server_logger.info(f"Planner Path: {PLANNER_PATH}")
 
 initialize_ollama()
 
@@ -68,7 +68,7 @@ async def create_diary_entry_file(
     template_content = await template_generator.generate_template_content(entry_date, date, focus)
 
     if entry_manager.write_entry(file_path, template_content):
-        return f"🧠 Created memory log: {file_path}\n\nExplore the prompts, then use 'complete_diary_entry' when done to auto-generate memory links!"
+        return f"Created memory log: {file_path}\n\nExplore the prompts, then use 'complete_diary_entry' when done to auto-generate memory links!"
     else:
         return "Error creating file: Permission denied or I/O error"
 
@@ -117,7 +117,7 @@ async def complete_diary_entry(
         
         connections_desc = " + ".join(connection_parts) if connection_parts else "novel territory"
         
-        return f"🧠 **Cognitive trace completed** for {date}\n\n🔍 **Analytical themes:** {themes_str}\n🔗 **Memory network:** {connections_desc} ({connection_percentage:.1f}% temporal coverage)\n\n📚 **Integration status:** Your exploration is now woven into Obsidian's knowledge graph!\n\n💡 **Discover more:** Backlinks panel (temporal), Tags panel (topics), Graph view (visual network)"
+        return f"**Cognitive trace completed** for {date}\n\n**Analytical themes:** {themes_str}\n**Memory network:** {connections_desc} ({connection_percentage:.1f}% temporal coverage)\n\n**Integration status:** Your exploration is now woven into Obsidian's knowledge graph!\n\n**Discover more:** Backlinks panel (temporal), Tags panel (topics), Graph view (visual network)"
     else:
         return "Error completing entry: Permission denied or I/O error"
 
@@ -160,7 +160,7 @@ async def update_entry_backlinks(
         connections_str = " + ".join(connection_types) if connection_types else "none found"
         
         return (
-            f"✅ **Memory links updated** for {date}\n\n🔗 **Connections:** {connections_str}\n\n💡 **Obsidian power:** Use Backlinks panel for temporal connections, Tags panel for topics, Graph view for visual exploration!"
+            f"**Memory links updated** for {date}\n\n**Connections:** {connections_str}\n\n**Obsidian power:** Use Backlinks panel for temporal connections, Tags panel for topics, Graph view for visual exploration!"
         )
     else:
         return "Error updating entry: Permission denied or I/O error"
@@ -210,7 +210,7 @@ async def refresh_recent_backlinks(
             
             if entry_manager.write_entry(file_path, content):
                 updated_count += 1
-                print(f"✅ Updated {file_path.stem} ({len(related)} connections)")
+                print(f"Updated {file_path.stem} ({len(related)} connections)")
             else:
                 errors.append(f"{file_path.stem}: Write error")
             
@@ -218,12 +218,12 @@ async def refresh_recent_backlinks(
             errors.append(f"{file_path.stem}: {str(e)}")
             print(f"❌ Error: {file_path.stem}: {e}")
     
-    result = f"🧠 **Memory network refreshed!**\n\n✅ **Updated:** {updated_count} memory logs from last {days} days"
+    result = f"**Memory network refreshed!**\n\n**Updated:** {updated_count} memory logs from last {days} days"
     
     if errors:
         result += f"\n\n⚠️ **Errors:** {len(errors)} memory logs had issues"
     
-    result += "\n\n💡 **Tip:** This is much faster than refreshing all memory logs!"
+    result += "\n\n**Tip:** This is much faster than refreshing all memory logs!"
     return result
 
 
@@ -312,7 +312,7 @@ async def show_themes(
     
     sorted_themes = sorted(theme_frequency.items(), key=lambda x: x[1], reverse=True)
     
-    result = [f"🧠 **Recurring themes from the last {days} days** ({len(recent_entries)} entries analyzed):\n"]
+    result = [f"**Recurring themes from the last {days} days** ({len(recent_entries)} entries analyzed):\n"]
     result.extend(
         f"- **{theme}** ({count}× across {(count / len(recent_entries)) * 100:.0f}% of entries)"
         for theme, count in sorted_themes[:15]
@@ -362,7 +362,7 @@ async def create_memory_trace(
     if not recent_entries:
         return f"No memory logs found in the last {days} days"
     
-    print(f"🧠 Generating Memory Trace for {len(recent_entries)} entries from last {days} days...")
+    print(f"Generating Memory Trace for {len(recent_entries)} entries from last {days} days...")
     
     trace_content = await generate_memory_trace(recent_entries, analysis_engine, entry_manager)
     
@@ -371,7 +371,7 @@ async def create_memory_trace(
         trace_path = entry_manager.diary_path / trace_filename
         
         if entry_manager.write_entry(trace_path, trace_content):
-            return f"✨ **Memory Trace generated!**\n\n📊 Analyzed {len(recent_entries)} entries from the last {days} days\n📁 Saved to: {trace_path}\n\n💡 Open in Obsidian to explore your cognitive patterns, theme evolution, and personal growth trajectory!"
+            return f"**Memory Trace generated!**\n\nAnalyzed {len(recent_entries)} entries from the last {days} days\nSaved to: {trace_path}\n\nOpen in Obsidian to explore your cognitive patterns, theme evolution, and personal growth trajectory!"
         else:
             return f"✨ Memory Trace generated but couldn't save to file.\n\n{trace_content}"
     else:
@@ -423,7 +423,7 @@ async def extract_todos(
     
     planner_content = f"# Action Items - {entry_date.strftime('%B %d, %Y')}\n\n"
     planner_content += f"Extracted from diary entry: [[{date}]]\n\n"
-    planner_content += "## 📋 Tasks\n\n"
+    planner_content += "## Tasks\n\n"
     
     for todo in todos:
         planner_content += f"- [ ] {todo}\n"
@@ -432,7 +432,7 @@ async def extract_todos(
     
     try:
         planner_path.write_text(planner_content, encoding="utf-8")
-        return f"✅ **Extracted {len(todos)} action items!**\n\n📁 Saved to: {planner_path}\n\n💡 **Next steps:**\n- Review and prioritize your tasks\n- Add deadlines or context as needed\n- Check off items as you complete them\n\n📝 **Preview:**\n{chr(10).join([f'- {todo}' for todo in todos[:5]])}{'...' if len(todos) > 5 else ''}"
+        return f"**Extracted {len(todos)} action items!**\n\nSaved to: {planner_path}\n\n**Next steps:**\n- Review and prioritize your tasks\n- Add deadlines or context as needed\n- Check off items as you complete them\n\n**Preview:**\n{chr(10).join([f'- {todo}' for todo in todos[:5]])}{'...' if len(todos) > 5 else ''}"
     except Exception as e:
         return f"Error writing planner file: {e}\n\n📝 **Extracted todos:**\n{chr(10).join([f'- {todo}' for todo in todos])}"
 

@@ -17,7 +17,7 @@ class AnalysisEngine:
     def _extract_brain_dump(self, content: str) -> str:
         """Extract the Brain Dump section which contains actual reflections (not prompts)."""
         brain_dump_match = re.search(
-            r"##\s*(?:💭|🧠)\s*Brain Dump\s*\n+(.*?)(?=\n---|\n##|\Z)",
+            r"##\s*Brain Dump\s*\n+(.*?)(?=\n---|\n##|\Z)",
             content,
             re.DOTALL | re.IGNORECASE,
         )
@@ -36,7 +36,7 @@ class AnalysisEngine:
     def _extract_reflection_prompts(self, content: str) -> str:
         """Extract the reflection prompts section to identify unresolved questions."""
         prompts_match = re.search(
-            r"##\s*(?:💭|🤔|🧠)\s*(?:Daily Reflection|Reflection Questions|Reflection Prompts|Weekly Reflection)\s*\n+(.*?)(?=\n---|\n##|\Z)",
+            r"##\s*(?:Daily Reflection|Reflection Questions|Reflection Prompts|Weekly Reflection)\s*\n+(.*?)(?=\n---|\n##|\Z)",
             content,
             re.DOTALL | re.IGNORECASE,
         )
@@ -60,7 +60,7 @@ class AnalysisEngine:
                 r"\*\*Related entries:\*\*.*$", "", content, flags=re.DOTALL
             )
             analysis_content = re.sub(
-                r"##\s*🔗\s*Memory Links.*$", "", analysis_content, flags=re.DOTALL
+                r"##\s*Memory Links.*$", "", analysis_content, flags=re.DOTALL
             )
             logger.debug("No substantial Brain Dump found, analyzing full entry")
 

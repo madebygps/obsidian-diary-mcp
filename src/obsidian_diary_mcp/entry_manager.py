@@ -60,8 +60,8 @@ class EntryManager:
         """Remove existing backlinks sections from content (including placeholder sections)."""
         patterns = [
             r"---\n\*\*(?:Related entries|Memory links):\*\*.*$",
-            r"---\s*##\s*(?:🔗\s*)?Memory Links\s*\n+\*Temporal connections.*?\*",
-            r"---\s*##\s*(?:🔗\s*)?Memory Links\s*\n+.*?(?=\n---|\Z)"
+            r"---\s*##\s*Memory Links\s*\n+\*Temporal connections.*?\*",
+            r"---\s*##\s*Memory Links\s*\n+.*?(?=\n---|\Z)"
         ]
         
         for pattern in patterns:
@@ -73,7 +73,7 @@ class EntryManager:
         """Add memory links section to content, replacing any existing placeholder."""
         content = self.remove_existing_backlinks(content)
         
-        memory_section = "\n\n---\n\n## 🔗 Memory Links\n\n"
+        memory_section = "\n\n---\n\n## Memory Links\n\n"
         
         if related:
             memory_section += f"**Temporal connections:** {' • '.join(related)}\n\n"

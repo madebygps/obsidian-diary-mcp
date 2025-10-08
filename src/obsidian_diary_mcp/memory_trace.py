@@ -19,7 +19,7 @@ async def generate_memory_trace(
     entry_data = []
     all_themes = []
     
-    print("📚 Reading and analyzing entries...")
+    print("Reading and analyzing entries...")
     for date, path in sorted_entries:
         content = entry_manager.read_entry(path)
         if content.startswith("Error"):
@@ -440,28 +440,5 @@ def _extract_snippet(content: str, max_length: int = 100) -> str:
 
 
 def _get_theme_emoji(theme: str) -> str:
-    """Get appropriate emoji for theme (simple heuristic)."""
-    theme_lower = theme.lower()
-    
-    emoji_map = {
-        'work': '💼', 'career': '💼', 'job': '💼', 'professional': '💼',
-        'health': '🏋️', 'fitness': '🏋️', 'exercise': '🏋️', 'wellness': '🏋️',
-        'relationship': '💝', 'love': '💝', 'partner': '💝', 'dating': '💝',
-        'friend': '👥', 'social': '👥', 'community': '👥',
-        'learn': '📚', 'study': '📚', 'education': '📚', 'knowledge': '📚',
-        'creative': '🎨', 'art': '🎨', 'music': '🎨', 'writing': '🎨',
-        'tech': '💻', 'coding': '💻', 'programming': '💻', 'software': '💻',
-        'mental': '🧠', 'mind': '🧠', 'psychology': '🧠', 'thinking': '🧠',
-        'spiritual': '🙏', 'faith': '🙏', 'belief': '🙏', 'meditation': '🙏',
-        'family': '👨‍👩‍👧', 'parent': '👨‍👩‍👧', 'sibling': '👨‍👩‍👧',
-        'money': '💰', 'finance': '💰', 'financial': '💰', 'budget': '💰',
-        'goal': '🎯', 'achievement': '🎯', 'success': '🎯', 'progress': '🎯',
-        'content': '🎥', 'video': '🎥', 'youtube': '🎥', 'stream': '🎥',
-        'project': '🔧', 'build': '🔧', 'create': '🔧', 'develop': '🔧',
-    }
-    
-    for keyword, emoji in emoji_map.items():
-        if keyword in theme_lower:
-            return emoji
-    
-    return '📝'  # Default
+    """Get appropriate emoji for theme (simple heuristic). Returns empty string since emojis are disabled."""
+    return ""  # No emojis

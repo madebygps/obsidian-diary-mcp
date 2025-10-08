@@ -82,7 +82,7 @@ class TemplateGenerator:
             template_parts.append("## 🌅 Weekly Synthesis & Alignment")
             template_parts.append("\n*A deeper reflection on the past week and intentional focus for the week ahead*\n")
         else:
-            template_parts.append("## 🧠 Reflection Prompts")
+            template_parts.append("## Reflection Prompts")
             template_parts.append("\n*Building on insights from previous entries*\n")
 
         for i, prompt in enumerate(prompts, 1):
@@ -92,9 +92,15 @@ class TemplateGenerator:
         
         template_parts.append("---")
         template_parts.append("")
-        template_parts.append("## 🧠 Brain Dump")
+        template_parts.append("## Brain Dump")
         template_parts.append("")
         template_parts.append("*Your thoughts, experiences, and observations...*")
+        template_parts.append("")
+        template_parts.append("---")
+        template_parts.append("")
+        template_parts.append("## Memory Links")
+        template_parts.append("")
+        template_parts.append("*Temporal connections and topic tags will be auto-generated when you complete the entry.*")
 
         return "\n".join(template_parts)
 
