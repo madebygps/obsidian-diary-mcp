@@ -140,8 +140,16 @@ friendship, work-stress, creativity"""
         current_content: str,
         exclude_date: Optional[str] = None,
         max_related: int = 6,
+        max_days_back: int = 30,
     ) -> List[str]:
-        """Find related entries using cached theme analysis (prioritizes Brain Dump content)."""
+        """Find related entries using cached theme analysis (prioritizes Brain Dump content).
+        
+        Args:
+            current_content: Content to find related entries for
+            exclude_date: Date to exclude from results (usually current entry date)
+            max_related: Maximum number of related entries to return
+            max_days_back: Only analyze entries from the last N days (default: 30)
+        """
         current_themes = set(
             await self.get_themes_cached(current_content, exclude_date or "current")
         )
@@ -150,13 +158,18 @@ friendship, work-stress, creativity"""
             logger.info("No themes extracted for current entry")
             return []
 
-        entries = entry_manager.get_all_entries()
+        from datetime import datetime, timedelta
+        cutoff_date = datetime.now() - timedelta(days=max_days_back)
+        
+        all_entries = entry_manager.get_all_entries()
+        entries = [(date, path) for date, path in all_entries if date >= cutoff_date]
+        
         similarity_scores = []
 
         logger.info(
             f"Finding related entries based on themes: {', '.join(sorted(current_themes))}"
         )
-        logger.debug(f"Analyzing {len(entries)} entries for connections")
+        logger.debug(f"Analyzing {len(entries)} entries from last {max_days_back} days (total: {len(all_entries)})")
 
         for date, file_path in entries:
             if exclude_date and file_path.stem == exclude_date:

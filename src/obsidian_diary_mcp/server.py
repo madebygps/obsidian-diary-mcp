@@ -54,7 +54,9 @@ async def create_diary_entry_file(
     date: Annotated[str, "REQUIRED: Current date in YYYY-MM-DD format. For 'today', pass the current system date like '2025-10-07'"],
     focus: Annotated[str | None, "Optional focus area (e.g., 'current struggles', 'cognitive patterns')"] = None
 ) -> str:
-    """Create a sophisticated diary entry file with AI-generated analytical prompts for deep intellectual exploration."""
+    """CREATE A NEW DIARY LOG ENTRY for a specific date with AI-generated analytical prompts for deep intellectual exploration.
+    
+    Use this tool when you want to start a new diary entry for today or any specific date."""
     try:
         entry_date = datetime.strptime(date, "%Y-%m-%d")
     except ValueError:
@@ -326,20 +328,22 @@ async def show_themes(
 
 @mcp.tool(
     annotations={
-        "title": "Create Memory Trace",
+        "title": "Generate Memory Trace Analysis",
         "readOnlyHint": False,
         "destructiveHint": False,
         "idempotentHint": False,
         "openWorldHint": False
     }
 )
-async def create_memory_trace(
+async def generate_memory_trace_analysis(
     days: Annotated[int, Field(ge=1, le=365, description="Number of days to analyze (e.g., 30 for last month, 365 for last year)")] = 30,
     save_to_file: Annotated[bool, "Whether to save the memory trace to a file in the diary directory"] = True
 ) -> str:
-    """Generate a comprehensive Memory Trace document analyzing themes, patterns, and connections across your diary entries.
+    """Analyze existing diary entries to generate a comprehensive analytical report with themes, patterns, and cognitive insights.
     
-    This creates a detailed visualization of your journey including:
+    This is NOT for creating new diary entries - use 'create_diary_entry_file' for that.
+    
+    This analysis tool creates a detailed visualization of your journey including:
     - Timeline overview with key themes
     - Core themes with evolution tracking
     - Relationship maps
